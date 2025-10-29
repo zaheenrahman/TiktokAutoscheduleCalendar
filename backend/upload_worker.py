@@ -14,7 +14,29 @@ import sys
 TIKTOK_UPLOADER_PATH = Path(__file__).parent.parent / "tiktok-uploader" / "src"
 sys.path.insert(0, str(TIKTOK_UPLOADER_PATH))
 
-from tiktok_uploader.upload import upload_video
+from tiktok_uploader import config as tt_config  # noqa: E402
+from tiktok_uploader.upload import upload_video  # noqa: E402
+
+
+_SLOW_MODE_APPLIED = False
+
+
+def _apply_slow_mode() -> None:
+    """Loosen Selenium timeouts so TikTok UI has time to breathe."""
+    global _SLOW_MODE_APPLIED
+    if _SLOW_MODE_APPLIED:
+        return
+
+    # Only ever increase waits; respect user overrides if they are higher already
+    tt_config.implicit_wait = max(tt_config.implicit_wait, 10)
+    tt_config.explicit_wait = max(tt_config.explicit_wait, 90)
+    tt_config.uploading_wait = max(tt_config.uploading_wait, 300)
+    tt_config.add_hashtag_wait = max(tt_config.add_hashtag_wait, 7)
+
+    # Always run with the browser visible for debugging
+    tt_config.headless = False
+
+    _SLOW_MODE_APPLIED = True
 
 
 def process_schedule(
@@ -22,12 +44,15 @@ def process_schedule(
     *,
     headless: bool = False,
     max_attempts: int = 3,
-    retry_delay_seconds: int = 15,
+    retry_delay_seconds: int = 20,
+    initial_delay_seconds: int = 3,
 ) -> bool:
     """Process a scheduled upload with retries.
 
     Returns True on success, False on failure or if schedule not found.
     """
+
+    _apply_slow_mode()
 
     db = SessionLocal()
     try:
@@ -63,6 +88,9 @@ def process_schedule(
         schedule.status = "uploading"
         db.commit()
 
+        # Give Chrome a moment before hammering TikTok
+        sleep(max(initial_delay_seconds, 0))
+
         for attempt in range(1, max_attempts + 1):
             print(
                 f"[upload-worker] Schedule {schedule_id}: attempt {attempt}/{max_attempts}"
@@ -73,6 +101,7 @@ def process_schedule(
                     description=schedule.description,
                     cookies=str(cookies_path),
                     headless=headless,
+                    num_retries=3,
                 )
 
                 if not result:
@@ -102,7 +131,7 @@ def process_schedule(
                 print(
                     f"[upload-worker] Schedule {schedule_id}: retrying in {retry_delay_seconds}s"
                 )
-                sleep(retry_delay_seconds)
+                sleep(max(retry_delay_seconds, 1))
 
         schedule.status = "failed"
         db.commit()
