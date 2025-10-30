@@ -233,12 +233,20 @@ function ScheduledVideosSection({ schedules, onUnschedule, onPlayVideo }) {
 }
 
 function VideoCard({ video, onSchedule, onDelete, onPlay }) {
+  const videoUrl = `${API_BASE_URL}/uploads/${video.stored_filename}`
+  
   return (
     <div className="group border border-gray-200 rounded-xl overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all">
       <div className="relative bg-gray-900 h-48 flex items-center justify-center cursor-pointer" onClick={onPlay}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <Play className="w-12 h-12 text-white opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all" />
-        <p className="absolute bottom-2 left-2 right-2 text-xs text-white font-medium truncate">
+        <video
+          src={videoUrl}
+          className="w-full h-full object-cover"
+          muted
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Play className="w-12 h-12 text-white" />
+        </div>
+        <p className="absolute bottom-2 left-2 right-2 text-xs text-white font-medium truncate bg-black/50 px-2 py-1 rounded">
           {video.filename}
         </p>
       </div>
