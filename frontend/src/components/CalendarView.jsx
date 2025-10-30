@@ -33,16 +33,16 @@ function CalendarEvent({ event }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 h-full overflow-hidden">
-      <div className="flex items-center gap-2.5">
+    <div className="flex flex-col gap-2 h-full min-h-0">
+      <div className="flex items-center gap-2.5 flex-shrink-0">
         {statusIcons[schedule.status]}
         <div className="font-bold text-base truncate">{timeLabel}</div>
       </div>
       {videoUrl && (
-        <div className="mt-auto -mx-3 -mb-3 rounded-lg overflow-hidden shadow-md">
+        <div className="flex-1 min-h-0 -mx-3 -mb-3 rounded-lg overflow-hidden shadow-md">
           <video
             src={videoUrl}
-            className="w-full h-28 object-cover"
+            className="w-full h-full object-cover"
             muted
             onClick={(e) => e.stopPropagation()}
             onMouseEnter={(e) => e.target.play()}
@@ -210,12 +210,15 @@ export default function CalendarView({ onDateSelect }) {
       uploading: { backgroundColor: '#3b82f6', borderColor: '#2563eb' },
       completed: { backgroundColor: '#6b7280', borderColor: '#4b5563' },
       failed: { backgroundColor: '#ef4444', borderColor: '#dc2626' },
-      cancelled: { backgroundColor: '#9ca3af', borderColor: '#6b7280' },
+      cancelled: { backgroundColor: '#f59e0b', borderColor: '#d97706' },
     }
+
+    const statusColor = colors[status] || colors.pending
 
     return {
       style: {
-        ...colors[status],
+        backgroundColor: statusColor.backgroundColor,
+        borderColor: statusColor.borderColor,
         color: 'white',
         border: 'none',
         borderRadius: '6px',
