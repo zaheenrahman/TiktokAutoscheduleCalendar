@@ -245,6 +245,7 @@ def get_schedules():
                 "id": s.id,
                 "video_id": s.video_id,
                 "video_filename": s.video.original_filename,
+                "video_file_url": f"/uploads/{s.video.stored_filename}",
                 "scheduled_time": s.scheduled_time,
                 "description": s.description,
                 "status": s.status,

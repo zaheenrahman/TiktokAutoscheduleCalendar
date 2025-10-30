@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar'
 import { format, parse, startOfWeek, getDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { getSchedules } from '../api/videos'
+import { getSchedules, API_BASE_URL } from '../api/videos'
 
 const locales = {
   'en-US': enUS
@@ -27,7 +27,93 @@ function CalendarEvent({ event }) {
   )
 }
 
+const StatusBadge = ({ status }) => {
+  const map = {
+    pending: 'bg-green-100 text-green-700',
+    uploading: 'bg-blue-100 text-blue-700',
+    completed: 'bg-gray-100 text-gray-700',
+    failed: 'bg-red-100 text-red-700',
+    cancelled: 'bg-yellow-100 text-yellow-700',
+  }
+
+  return (
+    <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded ${map[status] || 'bg-gray-100 text-gray-700'}`}>
+      {status.toUpperCase()}
+    </span>
+  )
+}
+
+const ScheduleDetails = ({ schedule, onClose }) => {
+  if (!schedule) return null
+
+  const scheduledAt = new Date(schedule.scheduled_time)
+  const uploadedAt = schedule.uploaded_at ? new Date(schedule.uploaded_at) : null
+  const videoUrl = schedule.video_file_url ? `${API_BASE_URL}${schedule.video_file_url}` : null
+
+  return (
+    <div className="mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {schedule.video_filename}
+          </h3>
+          <p className="text-sm text-gray-500">
+            Scheduled for {format(scheduledAt, 'PPpp')}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <StatusBadge status={schedule.status} />
+          <button
+            onClick={onClose}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      <div className="px-6 py-4 space-y-4">
+        {videoUrl && (
+          <div>
+            <video
+              src={videoUrl}
+              controls
+              className="w-full rounded-lg border border-gray-200"
+            />
+          </div>
+        )}
+
+        <div>
+          <h4 className="text-sm font-medium text-gray-700">Description</h4>
+          <p className="text-sm text-gray-600 whitespace-pre-wrap mt-1">
+            {schedule.description || '—'}
+          </p>
+        </div>
+
+        <div className="text-sm text-gray-600 space-y-1">
+          {uploadedAt && (
+            <p>
+              <span className="font-medium text-gray-700">Uploaded:</span>
+              {' '}
+              {format(uploadedAt, 'PPpp')}
+            </p>
+          )}
+          {schedule.error_message && (
+            <p className="text-red-600">
+              <span className="font-medium">Last error:</span>
+              {' '}
+              {schedule.error_message}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CalendarView({ onDateSelect }) {
+  const [selectedSchedule, setSelectedSchedule] = useState(null)
+
   // Fetch schedules
   const { data: schedules = [] } = useQuery({
     queryKey: ['schedules'],
@@ -106,7 +192,11 @@ export default function CalendarView({ onDateSelect }) {
           startAccessor="start"
           endAccessor="end"
           eventPropGetter={eventStyleGetter}
-          onSelectSlot={(slotInfo) => onDateSelect(slotInfo.start)}
+          onSelectSlot={(slotInfo) => {
+            setSelectedSchedule(null)
+            onDateSelect(slotInfo.start)
+          }}
+          onSelectEvent={(event) => setSelectedSchedule(event.resource)}
           selectable
           views={['month', 'week', 'day']}
           defaultView="month"
@@ -115,6 +205,11 @@ export default function CalendarView({ onDateSelect }) {
           }}
         />
       </div>
+
+      <ScheduleDetails
+        schedule={selectedSchedule}
+        onClose={() => setSelectedSchedule(null)}
+      />
     </div>
   )
 }

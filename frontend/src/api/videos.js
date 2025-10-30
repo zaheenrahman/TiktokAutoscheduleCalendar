@@ -6,6 +6,8 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
 })
 
+export { API_BASE_URL }
+
 // Videos
 export const uploadVideo = async (file) => {
   const formData = new FormData()
