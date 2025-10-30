@@ -53,6 +53,8 @@ dump.rdb
 # Cookies
 tiktok-uploader/tiktok_only_cookies.txt
 tiktok-uploader/cookies.txt
+backend/cookies/*.txt
+!backend/cookies/README.md
 
 # gitignore tiktok-uploader
 tiktok-uploader/
