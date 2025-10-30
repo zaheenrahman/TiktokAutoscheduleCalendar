@@ -25,24 +25,24 @@ function CalendarEvent({ event }) {
   const videoUrl = schedule.video_file_url ? `${API_BASE_URL}${schedule.video_file_url}` : null
   
   const statusIcons = {
-    completed: <CheckCircle className="w-3 h-3" />,
-    pending: <Clock className="w-3 h-3" />,
-    uploading: <Clock className="w-3 h-3 animate-pulse" />,
-    failed: <XCircle className="w-3 h-3" />,
-    cancelled: <AlertCircle className="w-3 h-3" />,
+    completed: <CheckCircle className="w-4 h-4" />,
+    pending: <Clock className="w-4 h-4" />,
+    uploading: <Clock className="w-4 h-4 animate-pulse" />,
+    failed: <XCircle className="w-4 h-4" />,
+    cancelled: <AlertCircle className="w-4 h-4" />,
   }
 
   return (
-    <div className="flex flex-col gap-1 h-full overflow-hidden">
-      <div className="flex items-center gap-1.5">
+    <div className="flex flex-col gap-2 h-full overflow-hidden">
+      <div className="flex items-center gap-2">
         {statusIcons[schedule.status]}
-        <div className="font-semibold text-xs truncate">{timeLabel}</div>
+        <div className="font-bold text-sm truncate">{timeLabel}</div>
       </div>
       {videoUrl && (
-        <div className="mt-auto -mx-1 -mb-1 rounded overflow-hidden">
+        <div className="mt-auto -mx-2 -mb-2 rounded-lg overflow-hidden shadow-sm">
           <video
             src={videoUrl}
-            className="w-full h-20 object-cover"
+            className="w-full h-24 object-cover"
             muted
             onClick={(e) => e.stopPropagation()}
             onMouseEnter={(e) => e.target.play()}
@@ -264,8 +264,8 @@ export default function CalendarView({ onDateSelect }) {
       </div>
 
       {/* Calendar container with padding to prevent overflow */}
-      <div className="bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
-        <div style={{ height: 650, position: 'relative' }}>
+      <div className="bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
+        <div style={{ height: 800, position: 'relative' }}>
           <Calendar
             localizer={localizer}
             events={events}
