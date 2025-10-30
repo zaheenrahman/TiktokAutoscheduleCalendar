@@ -1,14 +1,16 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDropzone } from 'react-dropzone'
-import { Upload, Trash2, Calendar, Video, CheckCircle, Clock, XCircle } from 'lucide-react'
-import { uploadVideo, getVideos, deleteVideo, getSchedules, API_BASE_URL } from '../api/videos'
+import { Upload, Trash2, Calendar, Video, CheckCircle, Clock, XCircle, X, Play } from 'lucide-react'
+import { uploadVideo, getVideos, deleteVideo, getSchedules, deleteSchedule, API_BASE_URL } from '../api/videos'
 import { format } from 'date-fns'
 
 export default function VideoLibrary({ onScheduleClick }) {
   const queryClient = useQueryClient()
   const [uploading, setUploading] = useState(false)
   const [activeTab, setActiveTab] = useState('unscheduled') // 'unscheduled' | 'scheduled'
+  const [videoModalOpen, setVideoModalOpen] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState(null)
 
   // Fetch videos
   const { data: videos = [], isLoading } = useQuery({
@@ -38,6 +40,15 @@ export default function VideoLibrary({ onScheduleClick }) {
   const deleteMutation = useMutation({
     mutationFn: deleteVideo,
     onSuccess: () => {
+      queryClient.invalidateQueries(['videos'])
+    },
+  })
+
+  // Delete schedule mutation (unschedule)
+  const deleteScheduleMutation = useMutation({
+    mutationFn: deleteSchedule,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['schedules'])
       queryClient.invalidateQueries(['videos'])
     },
   })
@@ -134,19 +145,39 @@ export default function VideoLibrary({ onScheduleClick }) {
               isLoading={isLoading}
               onSchedule={onScheduleClick}
               onDelete={(id) => deleteMutation.mutate(id)}
+              onPlayVideo={(videoUrl) => {
+                setSelectedVideo(videoUrl)
+                setVideoModalOpen(true)
+              }}
             />
           ) : (
             <ScheduledVideosSection
               schedules={scheduledVideos}
+              onUnschedule={(id) => deleteScheduleMutation.mutate(id)}
+              onPlayVideo={(videoUrl) => {
+                setSelectedVideo(videoUrl)
+                setVideoModalOpen(true)
+              }}
             />
           )}
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      {videoModalOpen && selectedVideo && (
+        <VideoPlayerModal
+          videoUrl={selectedVideo}
+          onClose={() => {
+            setVideoModalOpen(false)
+            setSelectedVideo(null)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-function UnscheduledVideosSection({ videos, isLoading, onSchedule, onDelete }) {
+function UnscheduledVideosSection({ videos, isLoading, onSchedule, onDelete, onPlayVideo }) {
   if (isLoading) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -171,13 +202,14 @@ function UnscheduledVideosSection({ videos, isLoading, onSchedule, onDelete }) {
           video={video}
           onSchedule={() => onSchedule(video, new Date())}
           onDelete={() => onDelete(video.id)}
+          onPlay={() => onPlayVideo(`${API_BASE_URL}/uploads/${video.stored_filename}`)}
         />
       ))}
     </div>
   )
 }
 
-function ScheduledVideosSection({ schedules }) {
+function ScheduledVideosSection({ schedules, onUnschedule, onPlayVideo }) {
   if (schedules.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -189,24 +221,32 @@ function ScheduledVideosSection({ schedules }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {schedules.map((schedule) => (
-        <ScheduledVideoCard key={schedule.id} schedule={schedule} />
+        <ScheduledVideoCard
+          key={schedule.id}
+          schedule={schedule}
+          onUnschedule={() => onUnschedule(schedule.id)}
+          onPlay={() => onPlayVideo(`${API_BASE_URL}${schedule.video_file_url}`)}
+        />
       ))}
     </div>
   )
 }
 
-function VideoCard({ video, onSchedule, onDelete }) {
+function VideoCard({ video, onSchedule, onDelete, onPlay }) {
   return (
-    <div className="group border border-gray-200 rounded-xl p-4 hover:border-purple-300 hover:shadow-lg transition-all">
-      <div className="flex flex-col gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">
-            {video.filename}
-          </p>
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-            {video.description}
-          </p>
-        </div>
+    <div className="group border border-gray-200 rounded-xl overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all">
+      <div className="relative bg-gray-900 h-48 flex items-center justify-center cursor-pointer" onClick={onPlay}>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Play className="w-12 h-12 text-white opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+        <p className="absolute bottom-2 left-2 right-2 text-xs text-white font-medium truncate">
+          {video.filename}
+        </p>
+      </div>
+      
+      <div className="p-4 space-y-3">
+        <p className="text-xs text-gray-500 line-clamp-2">
+          {video.description}
+        </p>
         
         <div className="flex gap-2">
           <button
@@ -230,7 +270,7 @@ function VideoCard({ video, onSchedule, onDelete }) {
   )
 }
 
-function ScheduledVideoCard({ schedule }) {
+function ScheduledVideoCard({ schedule, onUnschedule, onPlay }) {
   const videoUrl = schedule.video_file_url ? `${API_BASE_URL}${schedule.video_file_url}` : null
   const scheduledAt = new Date(schedule.scheduled_time)
   
@@ -247,11 +287,16 @@ function ScheduledVideoCard({ schedule }) {
   return (
     <div className="group border border-gray-200 rounded-xl overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all">
       {videoUrl && (
-        <video
-          src={videoUrl}
-          className="w-full h-48 object-cover bg-gray-100"
-          muted
-        />
+        <div className="relative bg-gray-900 h-48 flex items-center justify-center cursor-pointer" onClick={onPlay}>
+          <video
+            src={videoUrl}
+            className="w-full h-full object-cover"
+            muted
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Play className="w-12 h-12 text-white" />
+          </div>
+        </div>
       )}
       <div className="p-4 space-y-3">
         <div>
@@ -268,11 +313,40 @@ function ScheduledVideoCard({ schedule }) {
             <StatusIcon className="w-3 h-3" />
             {config.label}
           </div>
+          <button
+            onClick={onUnschedule}
+            className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+            title="Unschedule"
+          >
+            <X className="w-3 h-3" />
+            Cancel
+          </button>
         </div>
 
         <p className="text-xs text-gray-600 line-clamp-2">
           {schedule.description}
         </p>
+      </div>
+    </div>
+  )
+}
+
+function VideoPlayerModal({ videoUrl, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="relative bg-black rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <video
+          src={videoUrl}
+          controls
+          autoPlay
+          className="w-full h-full"
+        />
       </div>
     </div>
   )
