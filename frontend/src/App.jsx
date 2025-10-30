@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Calendar, Upload } from 'lucide-react'
+import { Calendar, Upload, User } from 'lucide-react'
 import VideoLibrary from './components/VideoLibrary'
 import CalendarView from './components/CalendarView'
 import ScheduleModal from './components/ScheduleModal'
+import ProfileManager from './components/ProfileManager'
 
 function App() {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [selectedDate, setSelectedDate] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('calendar') // 'calendar' | 'uploads'
+  const [activeTab, setActiveTab] = useState('calendar') // 'calendar' | 'uploads' | 'profiles'
 
   const handleScheduleClick = (video, date) => {
     setSelectedVideo(video)
@@ -59,6 +60,17 @@ function App() {
               <Upload className="w-5 h-5" />
               Uploads
             </button>
+            <button
+              onClick={() => setActiveTab('profiles')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all ${
+                activeTab === 'profiles'
+                  ? 'bg-white text-purple-600 shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <User className="w-5 h-5" />
+              Profiles
+            </button>
           </div>
         </div>
       </header>
@@ -69,10 +81,16 @@ function App() {
           <div className="h-full p-8">
             <CalendarView onDateSelect={(date) => handleScheduleClick(null, date)} />
           </div>
-        ) : (
+        ) : activeTab === 'uploads' ? (
           <div className="h-full p-8 overflow-auto">
             <div className="max-w-5xl mx-auto">
               <VideoLibrary onScheduleClick={handleScheduleClick} />
+            </div>
+          </div>
+        ) : (
+          <div className="h-full p-8 overflow-auto">
+            <div className="max-w-5xl mx-auto">
+              <ProfileManager />
             </div>
           </div>
         )}

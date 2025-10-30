@@ -57,3 +57,24 @@ export const deleteSchedule = async (id) => {
   return response.data
 }
 
+// Profiles
+export const getProfiles = async () => {
+  const response = await api.get('/profiles')
+  return response.data
+}
+
+export const createProfile = async (data) => {
+  const response = await api.post('/profiles', data)
+  return response.data
+}
+
+export const updateProfile = async (id, data) => {
+  const response = await api.patch(`/profiles/${id}`, data)
+  return response.data
+}
+
+export const deleteProfile = async (id) => {
+  const response = await api.delete(`/profiles/${id}`)
+  return response.data
+}
+

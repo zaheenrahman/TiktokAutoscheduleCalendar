@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { createSchedule, getVideos } from '../api/videos'
+import { createSchedule, getVideos, getProfiles } from '../api/videos'
 
 export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
   const queryClient = useQueryClient()
@@ -15,6 +15,7 @@ export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
   }
 
   const [selectedVideoId, setSelectedVideoId] = useState(video?.id || '')
+  const [selectedProfileId, setSelectedProfileId] = useState('')
   const [description, setDescription] = useState(video?.description || '')
   const [scheduledDate, setScheduledDate] = useState(() => getDefaultDateTime().date)
   const [scheduledTime, setScheduledTime] = useState(() => getDefaultDateTime().time)
@@ -24,6 +25,12 @@ export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
     queryKey: ['videos'],
     queryFn: getVideos,
     enabled: !video,
+  })
+
+  // Fetch profiles
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: getProfiles,
   })
 
   // Set initial values when modal opens - recalculate EVERY time
@@ -87,11 +94,17 @@ export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     
+    if (!selectedProfileId) {
+      alert('Please select a TikTok profile')
+      return
+    }
+    
     // Send as simple datetime string (no conversion)
     const scheduledTimeValue = `${scheduledDate}T${scheduledTime}:00`
     
     scheduleMutation.mutate({
       video_id: parseInt(selectedVideoId),
+      profile_id: parseInt(selectedProfileId),
       scheduled_time: scheduledTimeValue,
       description: description,
     })
@@ -100,8 +113,14 @@ export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
   const handlePostNow = (e) => {
     e.preventDefault()
     
+    if (!selectedProfileId) {
+      alert('Please select a TikTok profile')
+      return
+    }
+    
     postNowMutation.mutate({
       video_id: parseInt(selectedVideoId),
+      profile_id: parseInt(selectedProfileId),
       description: description,
     })
   }
@@ -160,6 +179,31 @@ export default function ScheduleModal({ isOpen, onClose, video, initialDate }) {
               </select>
             </div>
           )}
+
+          {/* Profile Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              TikTok Profile *
+            </label>
+            <select
+              value={selectedProfileId}
+              onChange={(e) => setSelectedProfileId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
+            >
+              <option value="">Choose a profile...</option>
+              {profiles.filter(p => p.is_active).map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {profiles.length === 0 && (
+              <p className="text-xs text-red-600 mt-1">
+                No profiles configured. Add a profile first.
+              </p>
+            )}
+          </div>
 
           {/* Date */}
           <div>

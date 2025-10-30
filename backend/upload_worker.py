@@ -79,11 +79,21 @@ def process_schedule(
             db.commit()
             return False
 
-        cookies_path = (
-            Path(__file__).parent.parent
-            / "tiktok-uploader"
-            / "tiktok_only_cookies.txt"
-        )
+        profile = schedule.profile
+        if not profile:
+            schedule.status = "failed"
+            schedule.error_message = "Profile record missing"
+            db.commit()
+            return False
+
+        # Use profile-specific cookies file
+        cookies_path = Path(__file__).parent / "cookies" / profile.cookies_filename
+        
+        if not cookies_path.exists():
+            schedule.status = "failed"
+            schedule.error_message = f"Cookies file not found: {profile.cookies_filename}"
+            db.commit()
+            return False
 
         schedule.status = "uploading"
         db.commit()
@@ -96,13 +106,20 @@ def process_schedule(
                 f"[upload-worker] Schedule {schedule_id}: attempt {attempt}/{max_attempts}"
             )
             try:
-                result = upload_video(
-                    filename=video.file_path,
-                    description=schedule.description,
-                    cookies=str(cookies_path),
-                    headless=headless,
-                    num_retries=3,
-                )
+                # Build kwargs for upload_video
+                upload_kwargs = {
+                    "filename": video.file_path,
+                    "description": schedule.description,
+                    "cookies": str(cookies_path),
+                    "headless": headless,
+                    "num_retries": 3,
+                }
+                
+                # Add proxy if profile has one configured
+                if profile.proxy:
+                    upload_kwargs["proxy"] = profile.proxy
+                
+                result = upload_video(**upload_kwargs)
 
                 if not result:
                     schedule.status = "completed"
