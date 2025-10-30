@@ -25,24 +25,24 @@ function CalendarEvent({ event }) {
   const videoUrl = schedule.video_file_url ? `${API_BASE_URL}${schedule.video_file_url}` : null
   
   const statusIcons = {
-    completed: <CheckCircle className="w-4 h-4" />,
-    pending: <Clock className="w-4 h-4" />,
-    uploading: <Clock className="w-4 h-4 animate-pulse" />,
-    failed: <XCircle className="w-4 h-4" />,
-    cancelled: <AlertCircle className="w-4 h-4" />,
+    completed: <CheckCircle className="w-5 h-5" />,
+    pending: <Clock className="w-5 h-5" />,
+    uploading: <Clock className="w-5 h-5 animate-pulse" />,
+    failed: <XCircle className="w-5 h-5" />,
+    cancelled: <AlertCircle className="w-5 h-5" />,
   }
 
   return (
     <div className="flex flex-col gap-2 h-full overflow-hidden">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {statusIcons[schedule.status]}
-        <div className="font-bold text-sm truncate">{timeLabel}</div>
+        <div className="font-bold text-base truncate">{timeLabel}</div>
       </div>
       {videoUrl && (
-        <div className="mt-auto -mx-2 -mb-2 rounded-lg overflow-hidden shadow-sm">
+        <div className="mt-auto -mx-3 -mb-3 rounded-lg overflow-hidden shadow-md">
           <video
             src={videoUrl}
-            className="w-full h-24 object-cover"
+            className="w-full h-28 object-cover"
             muted
             onClick={(e) => e.stopPropagation()}
             onMouseEnter={(e) => e.target.play()}
@@ -225,21 +225,13 @@ export default function CalendarView({ onDateSelect }) {
   }
 
   return (
-    <div className="relative">
-      {/* Glassmorphic header */}
-      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 p-6 mb-6">
+    <div className="h-full flex flex-col">
+      {/* Compact status legend header */}
+      <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-sm border border-white/20 p-4 mb-4 flex-shrink-0">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
-              <span className="text-2xl">📅</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Upload Schedule
-              </h2>
-              <p className="text-sm text-gray-500">Manage your TikTok posts</p>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Your Schedule
+          </h2>
           
           {/* Status Legend */}
           <div className="flex gap-3 text-xs flex-wrap">
@@ -263,29 +255,27 @@ export default function CalendarView({ onDateSelect }) {
         </div>
       </div>
 
-      {/* Calendar container with padding to prevent overflow */}
-      <div className="bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-8">
-        <div style={{ height: 800, position: 'relative' }}>
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            eventPropGetter={eventStyleGetter}
-            onSelectSlot={(slotInfo) => {
-              setSelectedSchedule(null)
-              onDateSelect(slotInfo.start)
-            }}
-            onSelectEvent={(event) => setSelectedSchedule(event.resource)}
-            selectable
-            views={['month', 'week', 'day']}
-            defaultView="month"
-            components={{
-              event: CalendarEvent,
-            }}
-            style={{ height: '100%' }}
-          />
-        </div>
+      {/* Calendar - takes remaining space */}
+      <div className="flex-1 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 overflow-hidden">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          eventPropGetter={eventStyleGetter}
+          onSelectSlot={(slotInfo) => {
+            setSelectedSchedule(null)
+            onDateSelect(slotInfo.start)
+          }}
+          onSelectEvent={(event) => setSelectedSchedule(event.resource)}
+          selectable
+          views={['month', 'week', 'day']}
+          defaultView="month"
+          components={{
+            event: CalendarEvent,
+          }}
+          style={{ height: '100%' }}
+        />
       </div>
 
       <ScheduleDetailsModal

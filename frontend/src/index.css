@@ -55,7 +55,7 @@
 .rbc-day-bg {
   border-color: #e5e7eb !important;
   transition: background-color 0.2s ease !important;
-  min-height: 140px !important;
+  min-height: 180px !important;
 }
 
 .rbc-day-bg:hover {
@@ -93,14 +93,14 @@
 
 /* Date numbers */
 .rbc-date-cell {
-  padding: 0.75rem !important;
+  padding: 1rem !important;
   text-align: right !important;
 }
 
 .rbc-date-cell > a {
   color: #374151 !important;
-  font-weight: 600 !important;
-  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
 }
 
 .rbc-off-range .rbc-date-cell > a {
@@ -115,10 +115,10 @@
 /* Event styling */
 .rbc-event {
   border: none !important;
-  border-radius: 0.75rem !important;
-  padding: 0.75rem !important;
-  min-height: 120px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 0.875rem !important;
+  padding: 1rem !important;
+  min-height: 140px !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   cursor: pointer !important;
   overflow: hidden !important;
