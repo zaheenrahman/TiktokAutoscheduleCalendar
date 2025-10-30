@@ -333,11 +333,11 @@ function ScheduledVideoCard({ schedule, onUnschedule, onPlay }) {
 
 function VideoPlayerModal({ videoUrl, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="relative bg-black rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-8" onClick={onClose}>
+      <div className="relative bg-black rounded-2xl shadow-2xl overflow-hidden" style={{ width: '450px', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+          className="absolute top-4 right-4 z-10 p-2 bg-black/70 hover:bg-black/90 text-white rounded-full transition-colors shadow-lg"
         >
           <X className="w-6 h-6" />
         </button>
@@ -345,7 +345,8 @@ function VideoPlayerModal({ videoUrl, onClose }) {
           src={videoUrl}
           controls
           autoPlay
-          className="w-full h-full"
+          className="w-full h-auto"
+          style={{ aspectRatio: '9/16' }}
         />
       </div>
     </div>
