@@ -33,21 +33,23 @@ function CalendarEvent({ event }) {
   }
 
   return (
-    <div className="flex items-center gap-1.5 overflow-hidden">
-      {statusIcons[schedule.status]}
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold truncate">{timeLabel}</div>
-        {videoUrl && (
-          <div className="mt-0.5 -ml-1 -mr-1">
-            <video
-              src={videoUrl}
-              className="w-full h-16 object-cover rounded"
-              muted
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        )}
+    <div className="flex flex-col gap-1 h-full overflow-hidden">
+      <div className="flex items-center gap-1.5">
+        {statusIcons[schedule.status]}
+        <div className="font-semibold text-xs truncate">{timeLabel}</div>
       </div>
+      {videoUrl && (
+        <div className="mt-auto -mx-1 -mb-1 rounded overflow-hidden">
+          <video
+            src={videoUrl}
+            className="w-full h-20 object-cover"
+            muted
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={(e) => e.target.play()}
+            onMouseLeave={(e) => { e.target.pause(); e.target.currentTime = 0; }}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -223,52 +225,67 @@ export default function CalendarView({ onDateSelect }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
-          📅 Upload Schedule
-        </h2>
-        
-        {/* Status Legend */}
-        <div className="flex gap-3 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-green-500"></div>
-            <span className="text-gray-600">Pending</span>
+    <div className="relative">
+      {/* Glassmorphic header */}
+      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 p-6 mb-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+              <span className="text-2xl">📅</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Upload Schedule
+              </h2>
+              <p className="text-sm text-gray-500">Manage your TikTok posts</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-blue-500"></div>
-            <span className="text-gray-600">Uploading</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-gray-500"></div>
-            <span className="text-gray-600">Completed</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-red-500"></div>
-            <span className="text-gray-600">Failed</span>
+          
+          {/* Status Legend */}
+          <div className="flex gap-3 text-xs flex-wrap">
+            <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-green-700 font-medium">Pending</span>
+            </div>
+            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200">
+              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+              <span className="text-blue-700 font-medium">Uploading</span>
+            </div>
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+              <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+              <span className="text-gray-700 font-medium">Completed</span>
+            </div>
+            <div className="flex items-center gap-2 bg-red-50 px-3 py-1.5 rounded-full border border-red-200">
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <span className="text-red-700 font-medium">Failed</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ height: 600 }}>
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          eventPropGetter={eventStyleGetter}
-          onSelectSlot={(slotInfo) => {
-            setSelectedSchedule(null)
-            onDateSelect(slotInfo.start)
-          }}
-          onSelectEvent={(event) => setSelectedSchedule(event.resource)}
-          selectable
-          views={['month', 'week', 'day']}
-          defaultView="month"
-          components={{
-            event: CalendarEvent,
-          }}
-        />
+      {/* Calendar container with padding to prevent overflow */}
+      <div className="bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+        <div style={{ height: 650, position: 'relative' }}>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            eventPropGetter={eventStyleGetter}
+            onSelectSlot={(slotInfo) => {
+              setSelectedSchedule(null)
+              onDateSelect(slotInfo.start)
+            }}
+            onSelectEvent={(event) => setSelectedSchedule(event.resource)}
+            selectable
+            views={['month', 'week', 'day']}
+            defaultView="month"
+            components={{
+              event: CalendarEvent,
+            }}
+            style={{ height: '100%' }}
+          />
+        </div>
       </div>
 
       <ScheduleDetailsModal

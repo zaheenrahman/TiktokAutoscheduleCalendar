@@ -2,47 +2,269 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply bg-gradient-to-br from-gray-50 via-gray-100 to-blue-50;
+  }
 }
 
-/* React Big Calendar custom styles */
+/* React Big Calendar - Modern Glassmorphism Design */
 .rbc-calendar {
   font-family: inherit;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible !important;
 }
 
-.rbc-event {
-  background-color: #10b981 !important;
-  border-radius: 6px;
-  padding: 4px 8px;
+/* Month view grid */
+.rbc-month-view {
+  border: none !important;
+  background: white !important;
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
 }
 
-.rbc-event.rbc-selected {
-  background-color: #059669 !important;
+/* Header row */
+.rbc-month-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+}
+
+.rbc-header {
+  border: none !important;
+  padding: 1rem 0.5rem !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Date cells */
+.rbc-day-bg {
+  border-color: #e5e7eb !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.rbc-day-bg:hover {
+  background-color: #f9fafb !important;
+  cursor: pointer;
+}
+
+.rbc-off-range-bg {
+  background-color: #f9fafb !important;
 }
 
 .rbc-today {
-  background-color: #fef3c7;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  position: relative;
 }
 
-.rbc-toolbar button {
-  border-radius: 6px;
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
+.rbc-today::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #f59e0b;
+  border-radius: 0;
+  pointer-events: none;
+  animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.rbc-toolbar button:hover {
-  background-color: #f3f4f6;
+@keyframes pulse-border {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
-.rbc-toolbar button.rbc-active {
-  background-color: #10b981;
-  color: white;
-  border-color: #10b981;
+/* Date numbers */
+.rbc-date-cell {
+  padding: 0.5rem !important;
+  text-align: right !important;
+}
+
+.rbc-date-cell > a {
+  color: #374151 !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+}
+
+.rbc-off-range .rbc-date-cell > a {
+  color: #9ca3af !important;
+}
+
+.rbc-today .rbc-date-cell > a {
+  color: #ea580c !important;
+  font-weight: 700 !important;
+}
+
+/* Event styling */
+.rbc-event {
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.rbc-event:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  z-index: 10 !important;
+}
+
+.rbc-event.rbc-selected {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+}
+
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-event-content {
+  overflow: visible !important;
+}
+
+/* Toolbar */
+.rbc-toolbar {
+  padding: 1.5rem 1rem !important;
+  margin-bottom: 1.5rem !important;
+  background: white !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+}
+
+.rbc-toolbar-label {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex: 1 !important;
+  text-align: center !important;
+}
+
+.rbc-btn-group {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.rbc-btn-group button {
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  border: 1px solid #e5e7eb !important;
+  background: white !important;
+  color: #374151 !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.rbc-btn-group button:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-color: transparent !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.rbc-btn-group button.rbc-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Week/Day views */
+.rbc-time-view {
+  border: none !important;
+  background: white !important;
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.rbc-time-header {
+  border: none !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.rbc-time-header-content {
+  border-left: none !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid #e5e7eb !important;
+}
+
+.rbc-time-slot {
+  border-top: 1px solid #f3f4f6 !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: #ef4444 !important;
+  height: 2px !important;
+}
+
+/* Popup/overlay */
+.rbc-overlay {
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  border: none !important;
+}
+
+/* Animation utilities */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Scrollbar styling */
+.rbc-time-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rbc-time-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
